@@ -1,0 +1,11 @@
+using visual studio community 2015
+generate mfc application
+remove original cpp files
+remove precompiled headers settings
+
+insert files from code folder
+inlude stdafx.h in all files (otherwise erroe about new operator present in afx and libcmtd libs)
+include expat.lib (in linkeer/input)
+remove unicode (in General)
+set exe folder as the outputdir (in General)
+set libs folder in include and lib paths (in VC++ Directories)

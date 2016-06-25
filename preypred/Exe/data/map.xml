@@ -1,0 +1,55 @@
+<root>
+
+<size value="16 16"/>
+<CellSizeInPixels value="32 32"/>
+
+
+
+<object type="Obstacle"  position="1 4"/>
+<object type="Obstacle"  position="2 4"/>
+<object type="Obstacle"  position="3 4"/>
+<object type="Obstacle"  position="4 4"/>
+<object type="Obstacle"  position="4 13"/>
+
+<object type="Obstacle"  position="5 7"/>
+<object type="Obstacle"  position="5 8"/>
+<object type="Obstacle"  position="5 9"/>
+<object type="Obstacle"  position="5 10"/>
+
+<object type="Obstacle"  position="8 10"/>
+<object type="Obstacle"  position="9 10"/>
+<object type="Obstacle"  position="10 10"/>
+
+<object type="Obstacle"  position="10 6"/>
+<object type="Obstacle"  position="10 7"/>
+<object type="Obstacle"  position="10 8"/>
+<object type="Obstacle"  position="10 9"/>
+
+<object type="Obstacle"  position="12 12"/>
+
+<object type="Obstacle"  position="11 1"/>
+<object type="Obstacle"  position="12 1"/>
+<object type="Obstacle"  position="13 1"/>
+<object type="Obstacle"  position="14 1"/>
+<object type="Obstacle"  position="14 2"/>
+<object type="Obstacle"  position="14 3"/>
+<object type="Obstacle"  position="14 4"/>
+
+
+<object type="Prey" position="0 15" direction="1"/>
+<object type="Prey" position="7 7" direction="1"/>
+<object type="Prey" position="11 0" direction="1"/>
+<object type="Prey" position="15 7" direction="1"/>
+<object type="Prey" position="15 7" direction="1"/>
+<object type="Prey" position="15 7" direction="1"/>
+<object type="Prey" position="15 7" direction="1"/>
+<object type="Prey" position="15 7" direction="1"/>
+
+
+<object type="Predator" position="7 12" direction="1"/>
+<object type="Predator" position="5 2" direction="1"/>
+<object type="Predator" position="1 1" direction="1"/>
+<object type="Predator" position="3 12" direction="1"/>
+<object type="Predator" position="10 2" direction="1"/>
+
+</root>

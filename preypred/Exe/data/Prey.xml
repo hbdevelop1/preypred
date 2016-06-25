@@ -1,0 +1,9 @@
+<root>
+
+<Vision  angle="60" range="3"/>
+<NbrOfFramesBeforeUpdate value="1"/>
+<HearingRange value="2"/>
+<NbrOfFramesHiding value="5"/>
+<NbrOfFramesInFleeWithoutDanger value="5"/>
+
+</root>

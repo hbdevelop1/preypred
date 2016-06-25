@@ -1,0 +1,172 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1036\deflangfe1036\deftab709{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}}
+{\colortbl ;\red0\green0\blue0;}
+{\*\generator Msftedit 5.41.15.1507;}\viewkind4\uc1\pard\f0\fs20\par
+\b 1 - Introduction\b0\par
+\par
+The PreyPred demo displays a board, predators, preys and obstacles.\par
+The EXE directory contains the executable of the demo. The source code can be loaded using SRC\\prj\\PreyPred.dsw file.\par
+\par
+Predators are represented by red circles. They search and chase preys.\par
+Preys are represented by blue circles. They try to flee from predator and hide behind obstacles.\par
+A straight line in a circle represent the direction it is moving in. There are four directions an actor (predators and preys) can face and move in : up, down, left or right. It can't move in a diagonal way.\par
+Obstacles are black squares and actors can not walk in squares containing them.\par
+\par
+\par
+\b 2 - Configuration files\b0\par
+\par
+1 - The data/map.xml file describes the following :\par
+-the size of the board in squares\par
+-the height and width of a square in pixels\par
+-the positions of obstacles\par
+-the positions of actors along with their directions.\par
+\par
+2 - Actor's capabilities are described in data/predator.xml and data/prey.xml files.\par
+Both files define vision parameters : the range of view in squares and the angle of view. \par
+They also define the rate of behavior execution using the NbrOfFramesBeforeUpdate element. A value of "2" means the behavior is run each 2 frames.\par
+data/predator.xml also defines the amount of time, in frames, a predator remembers the location where it has last seen a prey.\par
+And data/prey.xml defines the hearing range, in squares, of a prey.\par
+\par
+These configuration files are loaded by "Loader" class\par
+\par
+The behavior of actors is implemented using finite state machine technique.\par
+\par
+\par
+\b 3 - Predator \b0\par
+\par
+The predator actor has two behaviors :\par
+\par
+1- \ul SearchAndChase\ulnone  : \par
+It is most of the time in this behavior. It searches for preys and chases them.\par
+When in SearchAndChase behavior, it uses vision capability to detect preys through Vivisibility::GetSeenObjects.\par
+If a prey is detected, a path to its location is constructed and followed through frames.\par
+\par
+When more than one prey has been detected, it selects the nearest one using Actor::GetNearestObject.\par
+A path to the position of that pery is constructed using Path::GetAStraightPathFromTo, and the walk is carried out using Path::Walk.\par
+\par
+Each frame, squares seen in the field of vision are explored for preys. If preys are found, it picks the nearest prey and compares its position to the location of the previous frame's prey.\par
+The nearest seen prey in the current frame may be the same as the one set for chase in a previous one. It may also be a really new prey that entered vision field of the predator.\par
+A new path to this new prey is constructed if it is nearer than the one being chased. In the contrary, the predator continues to walk the path found in the previous frame.\par
+When no preys have been seen in a frame, the predator continues to walk, for some time, the path set in a previous frame.\par
+The amount of time it sticks to this path is the number of frames specified by the element MemoryTime in the data/predator.xml.\par
+When this time is over, the predator looses its memory, and no more follows this path; the prey has been lost.\par
+\par
+A prey can disappear from the predator's vision in one of these case :\par
+- it has gone behind an obstacle. Obstacle squares block actor vision.\par
+- it has been eaten by another predator.\par
+- or when the predator changes direction while walking to it.\par
+\par
+\par
+2- \ul Eat\ulnone  : \par
+When it has reached a prey, it switches to this behavior to eat the prey.\par
+\par
+\par
+\b 4 - Prey\b0\par
+\par
+The prey detects predators by using the hearing capability. It uses vision capability to detect obstalces in front of it.\par
+Obstacles are important for the prey to hide from chasing predators.\par
+\par
+Prey can be in one of the following three behaviors: \par
+\par
+1-\ul Idle\ulnone  : \par
+The prey starts in this behavior and remains in it until one or more predators have been detected. It also switches from flee behavior to this behavior when no predators have been detected for the number of frames specified by NbrOfFramesInFleeWithoutDanger element in data/prey.xml\par
+\par
+2-\ul Flee\ulnone  : \par
+It switches to this behavior to try and flee from chasing predators either by runing away from them or by picking a location behind an obstacle; this location is called "refuge".\par
+The main idea behind fleeing is that the prey constructs a fleeing vector depending on chasing predators' locations. Based on the fleeing vector, it constructs and follows a path.\par
+While fleeing, it tries to find a refuge when it sees an obstacle. A refuge is detected based on the fleeing vector. A good refuge is one that is behind an obstacle relative to the fleeing vector. (cf Prey::IsAValidRefuge and Prey::FindARefuge)\par
+\par
+3-\ul Hide\ulnone  : \par
+When the prey reaches a refuge, it stands still in it for the number of frames specified by NbrOfFramesHiding element in data/prey.xml. if predators are detected in the meantime, it switches to the fleeing behavior.\par
+\par
+\par
+\b 5 - Path\b0\par
+\par
+Paths followed by actors are instances of the Path class.\par
+A path is a list of instructions. Each Instruction could be either a move or a change of orientation.\par
+A move instruction only makes the actor step one square in the direction it's facing (cf Move::Alter)\par
+An orientation instruction make the actor turn in a specified direction (cf Orientation::Alter)\par
+\par
+Path class provides the following main functions:\par
+-Path::GetAStraightPathInDirection finds a path, starting from a situation (a position and direction), in the direction specified by the secong argument. \par
+The max distance of the path is by default 5 squares length. The vector of direction is clamped and corrected if it leads out of the board.\par
+-Path::GetAStraightPathFromTo finds a path, starting from a situation (a position and direction), to a square given as the second argument.\par
+-Path::ConstructThePathFromSquares constructs a path based on a list of linked squares.\par
+\par
+\par
+\b 6 - SquareLine\b0\par
+\par
+Is a class providing two main functionnalities : \par
+-SquareLine::CanSee tells whether or not there is any obstacle hiding the center of a square from that of another one.\par
+-SquareLine::GetALine provide a list of squares crossed by a segment starting from the center of a square and ending at the center of another one.\par
+\par
+Each one of these functions is overloaded by a function that is public, which receives parameters to initialize the context of the recursive one.\par
+\par
+\par
+\b 7 - Visibility\b0\par
+\par
+Actor's vision capability is based on Visibility class.\par
+Visibility class has functions that determine the squares seen given a range, an angle, a position and a direction. \par
+Obstacles present in the field of view hide other squares.\par
+\par
+-Visibility class constructs two lines that delimits the viewing triangle. These two lines are created depending on the range and angle of view, the direction and position of the actor.\par
+-Visibility::GetSquaresInViewingTriangle function constructs a list of squares which centeral pixels are between the two delimiting lines and in the range of view.\par
+-Visibility::GetSeenSquares uses SquareLine class to eliminate squares hidden by obstacles from the list of squares reported inside the viewing triangle.\par
+-Visibility::GetSeenObjects is the only public function in Visibility class. It is used to allow the predator to detect the prey and vice-versa.\par
+\par
+\par
+\b 8 - Hearing\b0\par
+\par
+Capability hearing is only available for the prey. It allows it to detect predators all around it, and in the range of squares specified by HearingRange element in data/prey.xml\par
+\par
+\par
+\b 9 - Collision\b0\par
+\par
+No management is done to avoid collision of actors.\par
+\par
+\par
+\pard\nowidctlpar\b 10 - Debugging\b0\par
+\par
+1- The game can display its messages by sending them to the "logger" application.\par
+Messages sending is done by using the function "Debugger::GetInstance().Output"\par
+The "logger" application is in fact a simple text editor, with the capability of receiving text from other applications.\par
+\pard 2- Inside the circle representing an actor, some letters are displayed, depending the behavior an actor is in.\par
+\par
+The prey actor displays one the following letters :\par
+"F" for fleeing.\par
+"R" for going to a refuge.\par
+"H" for hiding\par
+\par
+The predator actor displays one the following letters :\par
+"C" for chasing\par
+"L" for lost prey, can't see it.\par
+"M" for using memory to go to where a prey has last been seen.\par
+\par
+\par
+\b 11 - Third party code\b0\par
+\par
+- XML file loader (libs\\Xml and code\\xml) from flipcode.net\par
+- math\\xlines.cpp from Graphics Gems\par
+\par
+\fs18\par
+\b\fs20 12 - Known issues\b0\fs18\par
+\par
+-Find a refuge based on the fleeing vector is not a good idea. A good refuge should rather be one that can't be seen by predators.\par
+-When a prey is sandwiched by two predators, two fleeing vectors are generated which combination yields a null vector. In this case Prey::GetVectorAwayFromAll returns the vector (1,1) as the fleeing vector. It should, in fact, return a vector perpendicular to two vectors.\par
+-When the prey is near the border and the m_fleeingvector is leading it out of the board, m_fleeingvector is set to (1,1) which is not a good idea. A thorough search should be undertaken to find a fleeing vector according to which border the prey is near of and where predators are. \par
+\fs20\par
+\par
+\pard\nowidctlpar\cf1\b 13 - Still to do\b0\par
+\pard\par
+-GetAnyPath function and Path member should appear in Actor class.\par
+-Non straight paths should also be found by Path class. Follow the Prey::FindARefuge to do it.\par
+-Use factory method pattern for actors and obstacles creation in Loader.\par
+-Prey::m_fleeingvector and Prey::m_fleeingvectorangle should be part of a structure istead of being exposed in Prey class.\par
+-Prey::m_refuge should be a location that is not seen by any predator. presently, the refuge is found based on the fleeing direction.\par
+-In Prey::Behavior_Flee, some predators appear two times in l_detectedprdt list because they are seen and heard.\par
+-In Prey::Behavior_Flee, when m_fleeingvector ends up to null, choose a fleeing vector according the boarder the prey is at, instead of (1,1).\par
+-Logger window should close when closing the app.\par
+-HObject::GetType() not used in CMainWindow::DrawBoard\par
+\par
+\par
+}
+ 
